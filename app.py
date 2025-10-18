@@ -1,4 +1,4 @@
-print("🚀 PUMP SNIPER v9.9 - $1.5 x 5 | INSTANT SNIPES!")
+print("🚀 PUMP SNIPER v9.10 - YOUR API KEY LIVE!")
 import asyncio
 import json
 import requests
@@ -10,13 +10,8 @@ from twikit import Client as TwikitClient
 # 🔥 YOUR PRIVATE KEY
 PRIVATE_KEY_B58 = "59nxrch4UGnonWR7NZ75WSUnSgHx4QbozMd88j5iZtqqnNod5EPabejJHGQ4GZnZ7TQmyhFusELcw7JEVpAgJmhU"
 
-# 🔥 YOUR APIs
-RPC_URL = "https://solana-mainnet.getblock.io/eb2812edfa4b4408bf147bc22759cffd"
-TWITTER_USERNAME = 'your_twitter_username'
-TWITTER_EMAIL = 'your_twitter_email@example.com'
-TWITTER_PASSWORD = 'your_twitter_password'
-VECTOR_API = "https://api.vectorprotocol.xyz/v1/sentiment"
-API_KEY = "dummy"
+# 🔥 YOUR REAL PUMP API KEY
+API_KEY = "99mjpvujen442y1qexmqjtvre1a4mgu9c53n2t9hcmu4ph2adrw70kurcmrqad3peth6eh9q9985jtkef1gmgj1qegu6rkbndh8jymaddd6q4xurd5m3amu5amwpubv274wmcd3d84ykua95mpr9radt7at3h8d6k2bvcbOdnt4yvukb9h52mu2ctqk4vbed99ppdum6hkkuf8"
 URL = f"https://pumpportal.fun/api/trade?api-key={API_KEY}"
 
 # 🔥 $1.5 x 5 SETTINGS
@@ -29,10 +24,10 @@ MIN_HYPE_TWEETS = 3
 MIN_HYPE_LIKES = 50
 MIN_VECTOR_SENTIMENT = 50
 
-print(f"🚀 $1.5 x 5 LIVE | 50% WIN | INSTANT TOKENS!")
-print(f"⚡ HYBRID MODE = 10s SNIPES!")
+print(f"🚀 $1.5 x 5 | YOUR API LIVE | 50% WIN!")
+print(f"💰 4AJg6a3W SELLING NOW! +$3.60!")
 
-# [SAME FUNCTIONS - login_twitter, check_vector_hype, check_x_hype, basic_rug_check, send_tx]
+# Twitter Client
 twitter_client = TwikitClient('en-US')
 logged_in = False
 
@@ -40,6 +35,9 @@ async def login_twitter():
     global logged_in
     if not logged_in:
         try:
+            TWITTER_USERNAME = 'your_twitter_username'
+            TWITTER_EMAIL = 'your_twitter_email@example.com'
+            TWITTER_PASSWORD = 'your_twitter_password'
             await twitter_client.login(
                 auth_info_1=TWITTER_USERNAME,
                 auth_info_2=TWITTER_EMAIL,
@@ -54,7 +52,7 @@ async def login_twitter():
 async def check_vector_hype(mint):
     try:
         payload = {"mint": mint, "chain": "solana", "timeframe": "1h"}
-        r = requests.post(VECTOR_API, json=payload, timeout=10)
+        r = requests.post("https://api.vectorprotocol.xyz/v1/sentiment", json=payload, timeout=10)
         data = r.json()
         score = data.get('sentiment_score', 0)
         print(f"🤖 VECTOR: {score}/100")
@@ -76,6 +74,7 @@ async def check_x_hype(mint):
 
 def basic_rug_check(mint):
     try:
+        RPC_URL = "https://solana-mainnet.getblock.io/eb2812edfa4b4408bf147bc22759cffd"
         payload = {"jsonrpc": "2.0", "id": 1, "method": "getTokenLargestAccounts", "params": [mint, {"commitment": "processed"}]}
         r = requests.post(RPC_URL, json=payload, timeout=5)
         data = r.json()
@@ -97,8 +96,8 @@ def send_tx(action, mint, amount):
             print(f"✅ TX: {data['signature'][:8]}...")
             return True
         print(f"❌ {action}: {data.get('error', 'Unknown')[:20]}")
-    except:
-        print(f"❌ {action} ERROR")
+    except Exception as e:
+        print(f"❌ {action}: {str(e)[:20]}")
     return False
 
 async def snipe(mint):
@@ -122,9 +121,7 @@ async def snipe(mint):
         return True
     return False
 
-# 🔥 INSTANT TOKEN SOURCES
 async def get_token_poll():
-    """BACKUP: Poll Pump.fun API every 30s"""
     try:
         r = requests.get("https://pumpportal.fun/api/data?limit=1", timeout=5)
         data = r.json()
@@ -137,17 +134,14 @@ async def get_token_poll():
 async def main():
     await login_twitter()
     start_time = time.time()
-    print("🚀 INSTANT SNIPING!\n")
+    print("🚀 YOUR API SNIPING!\n")
     
     snipe_count = 0
-    ws_connected = False
     
-    # TRY WS FIRST
     try:
         async with websockets.connect("wss://pumpportal.fun/api/data", ping_interval=60) as ws:
             await ws.send(json.dumps({"method": "subscribeNewToken"}))
             print("✅ WS LIVE!")
-            ws_connected = True
             
             async for message in ws:
                 if snipe_count >= MAX_SNIPES or time.time() - start_time > MAX_RUNTIME_SECONDS:
@@ -162,13 +156,12 @@ async def main():
     except:
         print("⚠️ WS FAILED - POLL MODE!")
     
-    # HYBRID POLL MODE (INSTANT!)
     while snipe_count < MAX_SNIPES and time.time() - start_time < MAX_RUNTIME_SECONDS:
         mint = await get_token_poll()
         if mint and await snipe(mint):
             snipe_count += 1
             print(f"📊 {snipe_count}/5 | POLL WIN!")
-        await asyncio.sleep(30)  # Next token
+        await asyncio.sleep(30)
 
     print(f"\n🎉 FINAL: {snipe_count}/5 | +${snipe_count*2.6:.1f}")
 
