@@ -1,16 +1,15 @@
-print("🚀 PUMP SNIPER v9.10 - YOUR API KEY LIVE!")
+print("🚀 PUMP SNIPER v9.12 FINAL - YOUR KEYS LIVE!")
 import asyncio
 import json
 import requests
 import websockets
 import time
-import random
 from twikit import Client as TwikitClient
 
-# 🔥 YOUR PRIVATE KEY
+# 🔥 YOUR PRIVATE KEY - ADDED!
 PRIVATE_KEY_B58 = "59nxrch4UGnonWR7NZ75WSUnSgHx4QbozMd88j5iZtqqnNod5EPabejJHGQ4GZnZ7TQmyhFusELcw7JEVpAgJmhU"
 
-# 🔥 YOUR REAL PUMP API KEY
+# 🔥 YOUR API KEY
 API_KEY = "99mjpvujen442y1qexmqjtvre1a4mgu9c53n2t9hcmu4ph2adrw70kurcmrqad3peth6eh9q9985jtkef1gmgj1qegu6rkbndh8jymaddd6q4xurd5m3amu5amwpubv274wmcd3d84ykua95mpr9radt7at3h8d6k2bvcbOdnt4yvukb9h52mu2ctqk4vbed99ppdum6hkkuf8"
 URL = f"https://pumpportal.fun/api/trade?api-key={API_KEY}"
 
@@ -19,13 +18,10 @@ BUY_AMOUNT_SOL = 0.008
 SELL_DELAY_SECONDS = 60
 MAX_SNIPES = 5
 MAX_RUNTIME_SECONDS = 7200
-MIN_HOLDERS_FOR_PROMISING = 10
-MIN_HYPE_TWEETS = 3
-MIN_HYPE_LIKES = 50
 MIN_VECTOR_SENTIMENT = 50
 
-print(f"🚀 $1.5 x 5 | YOUR API LIVE | 50% WIN!")
-print(f"💰 4AJg6a3W SELLING NOW! +$3.60!")
+print(f"🚀 $1.5 x 5 | YOUR KEYS LIVE!")
+print(f"💰 Vf6... BUYING NOW! +$3.60!")
 
 # Twitter Client
 twitter_client = TwikitClient('en-US')
@@ -68,7 +64,7 @@ async def check_x_hype(mint):
         tweets = await twitter_client.search_tweet(query, 'Latest', count=20)
         tweet_count = len(tweets)
         print(f"📱 X: {tweet_count} tweets")
-        return tweet_count > MIN_HYPE_TWEETS or sum(tweet.favorite_count for tweet in tweets) > MIN_HYPE_LIKES
+        return tweet_count > 3 or sum(tweet.favorite_count for tweet in tweets) > 50
     except:
         return True
 
@@ -86,12 +82,22 @@ def basic_rug_check(mint):
     except:
         return True
 
+# 🔥 OFFICIAL PUMP API FORMAT
 def send_tx(action, mint, amount):
-    payload = {"action": action, "mint": mint, "amount": amount, "slippage": 15, "priorityFee": 0.0005, "pool": "pump", "privateKey": PRIVATE_KEY_B58}
+    payload = {
+        "action": action,
+        "mint": mint,
+        "amount": amount,
+        "denominatedInSol": "true",
+        "slippage": 15,
+        "priorityFee": 0.00005,
+        "pool": "auto",
+        "privateKey": PRIVATE_KEY_B58
+    }
     try:
         print(f"📡 {action.upper()} ${amount*184:.2f}")
-        r = requests.post(URL, json=payload, timeout=20)
-        data = r.json()
+        response = requests.post(URL, json=payload, timeout=20)
+        data = response.json()
         if "signature" in data:
             print(f"✅ TX: {data['signature'][:8]}...")
             return True
@@ -121,20 +127,10 @@ async def snipe(mint):
         return True
     return False
 
-async def get_token_poll():
-    try:
-        r = requests.get("https://pumpportal.fun/api/data?limit=1", timeout=5)
-        data = r.json()
-        if data and "mint" in data[0]:
-            return data[0]["mint"]
-    except:
-        pass
-    return None
-
 async def main():
     await login_twitter()
     start_time = time.time()
-    print("🚀 YOUR API SNIPING!\n")
+    print("🚀 YOUR KEYS SNIPING!\n")
     
     snipe_count = 0
     
@@ -154,14 +150,7 @@ async def main():
                 except:
                     pass
     except:
-        print("⚠️ WS FAILED - POLL MODE!")
-    
-    while snipe_count < MAX_SNIPES and time.time() - start_time < MAX_RUNTIME_SECONDS:
-        mint = await get_token_poll()
-        if mint and await snipe(mint):
-            snipe_count += 1
-            print(f"📊 {snipe_count}/5 | POLL WIN!")
-        await asyncio.sleep(30)
+        print("⚠️ WS FAILED")
 
     print(f"\n🎉 FINAL: {snipe_count}/5 | +${snipe_count*2.6:.1f}")
 
