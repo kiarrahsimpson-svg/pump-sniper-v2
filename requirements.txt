@@ -1,5 +1,2 @@
 requests
 websockets
-solana
-solders
-base58
