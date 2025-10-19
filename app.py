@@ -1,29 +1,43 @@
-print("🚀 PUMP SNIPER v9.12 FINAL - YOUR KEYS LIVE!")
+print("🚀 PUMP SNIPER v9.14 - NORMAL SOLANA KEY!")
 import asyncio
 import json
 import requests
 import websockets
 import time
 from twikit import Client as TwikitClient
+from solders.keypair import Keypair  # For b58 → hex conversion
+from base58 import b58decode
 
-# 🔥 YOUR PRIVATE KEY - ADDED!
-PRIVATE_KEY_B58 = "59nxrch4UGnonWR7NZ75WSUnSgHx4QbozMd88j5iZtqqnNod5EPabejJHGQ4GZnZ7TQmyhFusELcw7JEVpAgJmhU"
+# 🔥 YOUR NORMAL SOLANA PRIVATE KEY (64-char hex)
+# CONVERT YOUR b58 KEY HERE: https://www.browserling.com/tools/base58-to-hex
+PRIVATE_KEY_HEX = "2b4d5c8e9f1a2b3c4d5e6f7890abcdef1234567890abcdef1234567890abcdef"  # YOUR HEX KEY!
 
 # 🔥 YOUR API KEY
 API_KEY = "99mjpvujen442y1qexmqjtvre1a4mgu9c53n2t9hcmu4ph2adrw70kurcmrqad3peth6eh9q9985jtkef1gmgj1qegu6rkbndh8jymaddd6q4xurd5m3amu5amwpubv274wmcd3d84ykua95mpr9radt7at3h8d6k2bvcbOdnt4yvukb9h52mu2ctqk4vbed99ppdum6hkkuf8"
 URL = f"https://pumpportal.fun/api/trade?api-key={API_KEY}"
 
-# 🔥 $1.5 x 5 SETTINGS
 BUY_AMOUNT_SOL = 0.008
 SELL_DELAY_SECONDS = 60
 MAX_SNIPES = 5
 MAX_RUNTIME_SECONDS = 7200
 MIN_VECTOR_SENTIMENT = 50
 
-print(f"🚀 $1.5 x 5 | YOUR KEYS LIVE!")
-print(f"💰 Vf6... BUYING NOW! +$3.60!")
+print(f"🚀 $1.5 x 5 | NORMAL KEY LIVE!")
+print(f"💰 Vf6... BUYING NOW!")
 
-# Twitter Client
+# Convert b58 to hex if needed
+def get_private_key_hex():
+    b58_key = "59nxrch4UGnonWR7NZ75WSUnSgHx4QbozMd88j5iZtqqnNod5EPabejJHGQ4GZnZ7TQmyhFusELcw7JEVpAgJmhU"
+    try:
+        keypair = Keypair.from_base58_string(b58_key)
+        return keypair.to_bytes().hex()
+    except:
+        return PRIVATE_KEY_HEX  # Use manual hex
+
+PRIVATE_KEY_HEX = get_private_key_hex()
+print(f"🔑 NORMAL KEY: {PRIVATE_KEY_HEX[:16]}...")
+
+# Twitter functions (same)
 twitter_client = TwikitClient('en-US')
 logged_in = False
 
@@ -82,7 +96,7 @@ def basic_rug_check(mint):
     except:
         return True
 
-# 🔥 OFFICIAL PUMP API FORMAT
+# 🔥 OFFICIAL PUMP API WITH NORMAL HEX KEY!
 def send_tx(action, mint, amount):
     payload = {
         "action": action,
@@ -92,18 +106,19 @@ def send_tx(action, mint, amount):
         "slippage": 15,
         "priorityFee": 0.00005,
         "pool": "auto",
-        "privateKey": PRIVATE_KEY_B58
+        "privateKey": PRIVATE_KEY_HEX  # NORMAL HEX KEY!
     }
     try:
         print(f"📡 {action.upper()} ${amount*184:.2f}")
         response = requests.post(URL, json=payload, timeout=20)
         data = response.json()
+        print(f"DEBUG: {data}")
         if "signature" in data:
             print(f"✅ TX: {data['signature'][:8]}...")
             return True
-        print(f"❌ {action}: {data.get('error', 'Unknown')[:20]}")
+        print(f"❌ {action}: {data.get('error', 'Unknown')}")
     except Exception as e:
-        print(f"❌ {action}: {str(e)[:20]}")
+        print(f"❌ {action}: {str(e)}")
     return False
 
 async def snipe(mint):
@@ -130,7 +145,7 @@ async def snipe(mint):
 async def main():
     await login_twitter()
     start_time = time.time()
-    print("🚀 YOUR KEYS SNIPING!\n")
+    print("🚀 NORMAL KEY SNIPING!\n")
     
     snipe_count = 0
     
