@@ -1,17 +1,22 @@
-print("🚀 PUMP SNIPER v9.15 - AUTO HEX KEY! NO LIBRARIES!")
+print("🚀 PUMP SNIPER v9.18 - YOUR PUBLIC KEY LIVE!")
 import asyncio
 import json
 import requests
 import websockets
 import time
 from twikit import Client as TwikitClient
+from solders.transaction import VersionedTransaction
+from solders.keypair import Keypair
+from solders.commitment_config import CommitmentLevel
+from solders.rpc.requests import SendVersionedTransaction
+from solders.rpc.config import RpcSendTransactionConfig
 
-# 🔥 YOUR b58 KEY (AUTO-CONVERTED TO HEX!)
+# 🔥 YOUR KEYS
 B58_KEY = "59nxrch4UGnonWR7NZ75WSUnSgHx4QbozMd88j5iZtqqnNod5EPabejJHGQ4GZnZ7TQmyhFusELcw7JEVpAgJmhU"
-
-# 🔥 YOUR API KEY
+PUBLIC_KEY = "HF4GVzEDEdvg5Q6sGWnboZtp4epNptUuHhNftKcdiyZk"  # YOUR PUBLIC KEY!
 API_KEY = "99mjpvujen442y1qexmqjtvre1a4mgu9c53n2t9hcmu4ph2adrw70kurcmrqad3peth6eh9q9985jtkef1gmgj1qegu6rkbndh8jymaddd6q4xurd5m3amu5amwpubv274wmcd3d84ykua95mpr9radt7at3h8d6k2bvcbOdnt4yvukb9h52mu2ctqk4vbed99ppdum6hkkuf8"
-URL = f"https://pumpportal.fun/api/trade?api-key={API_KEY}"
+TRADE_URL = f"https://pumpportal.fun/api/trade-local?api-key={API_KEY}"
+RPC_URL = "https://pit37.nodes.rpcpool.com"
 
 BUY_AMOUNT_SOL = 0.008
 SELL_DELAY_SECONDS = 60
@@ -19,24 +24,60 @@ MAX_SNIPES = 5
 MAX_RUNTIME_SECONDS = 7200
 MIN_VECTOR_SENTIMENT = 50
 
-# 🔥 BUILT-IN b58 → hex CONVERTER (NO LIBRARIES!)
-def b58_to_hex(b58_string):
-    alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
-    num = 0
-    for char in b58_string:
-        num = num * 58 + alphabet.index(char)
-    # Convert to 64-char hex (32 bytes)
-    hex_key = ''
-    for i in range(32):
-        hex_key = f"{num % 256:02x}" + hex_key
-        num //= 256
-    return hex_key
+print(f"🏦 WALLET: {PUBLIC_KEY[:8]}...")
+print(f"🚀 $1.5 x 5 | Vf6... BUYING NOW!")
 
-PRIVATE_KEY_HEX = b58_to_hex(B58_KEY)
-print(f"🔑 AUTO-CONVERTED: {PRIVATE_KEY_HEX[:16]}...")
+# 🔥 CHECK WALLET BALANCE
+def check_wallet_balance():
+    try:
+        payload = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getBalance",
+            "params": [PUBLIC_KEY]
+        }
+        r = requests.post(RPC_URL, json=payload, timeout=10)
+        data = r.json()
+        sol_balance = data.get('result', {}).get('value', 0) / 1_000_000_000
+        print(f"💰 BALANCE: {sol_balance:.4f} SOL")
+        return sol_balance
+    except Exception as e:
+        print(f"❌ BALANCE CHECK: {str(e)[:50]}")
+        return 0
 
-print(f"🚀 $1.5 x 5 | NORMAL KEY LIVE!")
-print(f"💰 Vf6... BUYING NOW!")
+# 🔥 TRADE-LOCAL + RPC
+keypair = Keypair.from_base58_string(B58_KEY)
+def send_tx(action, mint, amount):
+    payload = {
+        "publicKey": PUBLIC_KEY,
+        "action": action,
+        "mint": mint,
+        "amount": amount,
+        "denominatedInSol": "true",
+        "slippage": 15,
+        "priorityFee": 0.005,
+        "pool": "auto"
+    }
+    try:
+        print(f"📡 {action.upper()} ${amount*184:.2f}")
+        r = requests.post(TRADE_URL, json=payload, timeout=20)
+        data = r.json()
+        print(f"DEBUG: {data}")
+        if "transaction" in data:
+            tx = VersionedTransaction.from_bytes(bytes.fromhex(data["transaction"]))
+            tx.sign([keypair])
+            tx_payload = SendVersionedTransaction(tx, RpcSendTransactionConfig(preflight_commitment=CommitmentLevel.Confirmed))
+            r2 = requests.post(RPC_URL, headers={"Content-Type": "application/json"}, json=tx_payload.to_json())
+            result = r2.json()
+            if "result" in result:
+                print(f"✅ TX: https://solscan.io/tx/{result['result']}")
+                return True
+            print(f"❌ RPC: {result.get('error', 'Unknown')}")
+        else:
+            print(f"❌ {action}: {data.get('error', 'Unknown')}")
+    except Exception as e:
+        print(f"❌ {action}: {str(e)[:50]}")
+    return False
 
 # Twitter Client
 twitter_client = TwikitClient('en-US')
@@ -85,7 +126,6 @@ async def check_x_hype(mint):
 
 def basic_rug_check(mint):
     try:
-        RPC_URL = "https://solana-mainnet.getblock.io/eb2812edfa4b4408bf147bc22759cffd"
         payload = {"jsonrpc": "2.0", "id": 1, "method": "getTokenLargestAccounts", "params": [mint, {"commitment": "processed"}]}
         r = requests.post(RPC_URL, json=payload, timeout=5)
         data = r.json()
@@ -96,30 +136,6 @@ def basic_rug_check(mint):
         return False
     except:
         return True
-
-# 🔥 OFFICIAL PUMP API WITH AUTO-CONVERTED HEX KEY!
-def send_tx(action, mint, amount):
-    payload = {
-        "action": action,
-        "mint": mint,
-        "amount": amount,
-        "denominatedInSol": "true",
-        "slippage": 15,
-        "priorityFee": 0.00005,
-        "pool": "auto",
-        "privateKey": PRIVATE_KEY_HEX  # AUTO-CONVERTED!
-    }
-    try:
-        print(f"📡 {action.upper()} ${amount*184:.2f}")
-        response = requests.post(URL, json=payload, timeout=20)
-        data = response.json()
-        if "signature" in data:
-            print(f"✅ TX: {data['signature'][:8]}...")
-            return True
-        print(f"❌ {action}: {data.get('error', 'Unknown')}")
-    except Exception as e:
-        print(f"❌ {action}: {str(e)[:50]}")
-    return False
 
 async def snipe(mint):
     print(f"\n🕵️ {mint[:8]}...")
@@ -145,10 +161,18 @@ async def snipe(mint):
 async def main():
     await login_twitter()
     start_time = time.time()
-    print("🚀 AUTO-HEX SNIPING!\n")
+    print("🚀 YOUR WALLET SNIPING!\n")
+    
+    # Check wallet balance
+    balance = check_wallet_balance()
+    if balance < 0.01:
+        print(f"\n🛑 WALLET EMPTY! FUND NOW:")
+        print(f"1. COPY: {PUBLIC_KEY}")
+        print("2. Phantom → Send 0.05 SOL")
+        print("3. Wait 30s → Reply 'FUNDED'")
+        return
     
     snipe_count = 0
-    
     try:
         async with websockets.connect("wss://pumpportal.fun/api/data", ping_interval=60) as ws:
             await ws.send(json.dumps({"method": "subscribeNewToken"}))
